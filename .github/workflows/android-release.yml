@@ -14,10 +14,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
 
-      - name: Install dependencies
+      - name: Install dependencies (generate lockfile if missing)
         run: |
-          npm ci
+          if [ -f package-lock.json ]; then
+            npm ci --no-audit --no-fund
+          else
+            npm install --no-audit --no-fund
+          fi
 
       - name: Export Next.js static build
         run: |
@@ -26,6 +31,12 @@ jobs:
       - name: Install Capacitor CLI
         run: |
           npm i -g @capacitor/cli
+
+      - name: Ensure Capacitor config at repo root
+        run: |
+          if [ -f ghost_key/capacitor.config.ts ]; then
+            cp ghost_key/capacitor.config.ts ./capacitor.config.ts
+          fi
 
       - name: Add Android platform
         run: |
